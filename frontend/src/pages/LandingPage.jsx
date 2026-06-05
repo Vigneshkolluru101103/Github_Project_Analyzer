@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
 import ResultCardPlaceholder from '../components/ResultCardPlaceholder';
+import CTASection from '../components/CTASection';
+import Footer from '../components/Footer';
 import { Activity, ShieldCheck, Zap } from 'lucide-react';
 
 export default function LandingPage() {
@@ -27,7 +29,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center pt-32 px-6 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col items-center pt-32 overflow-x-hidden relative">
       
       {/* Background ambient light */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -36,7 +38,7 @@ export default function LandingPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="w-full max-w-4xl mx-auto text-center relative z-10"
+        className="w-full max-w-4xl mx-auto text-center relative z-10 px-6"
       >
         {/* Pill Badge */}
         <div className="inline-flex items-center px-4 py-1.5 rounded-full premium-border bg-zinc-900/50 backdrop-blur-sm text-zinc-400 text-xs font-medium mb-8">
@@ -93,6 +95,23 @@ export default function LandingPage() {
           ) : null}
         </AnimatePresence>
       </motion.div>
+
+      {/* CTA and Footer Section (Fades in if not analyzing) */}
+      <AnimatePresence>
+        {!showPlaceholder && !isAnalyzing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="w-full mt-32 relative z-10"
+          >
+            <CTASection />
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
