@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
 import ResultCardPlaceholder from '../components/ResultCardPlaceholder';
-import CTASection from '../components/CTASection';
+import HowItWorksSection from '../components/HowItWorksSection';
 import Footer from '../components/Footer';
-import { Activity, ShieldCheck, Zap } from 'lucide-react';
+import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
 
 export default function LandingPage() {
   const [repoUrl, setRepoUrl] = useState('');
@@ -23,9 +23,10 @@ export default function LandingPage() {
   };
 
   const features = [
-    { icon: Activity, title: "Code Quality Metrics", desc: "Deep static analysis of your architecture." },
-    { icon: Zap, title: "Performance Profiling", desc: "Identify bottlenecks in your frontend and backend." },
-    { icon: ShieldCheck, title: "Security Audit", desc: "Detect vulnerabilities and bad practices." }
+    { icon: FolderTree, title: "Repository Analysis", desc: "Analyze repository structure and architecture." },
+    { icon: Blocks, title: "Feature Detection", desc: "Detect technologies and implemented features." },
+    { icon: BarChart, title: "Project Evaluation", desc: "Evaluate engineering practices and project maturity." },
+    { icon: Route, title: "Improvement Roadmap", desc: "Receive actionable recommendations and next steps." }
   ];
 
   return (
@@ -73,7 +74,7 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto border-t border-zinc-800/50 pt-16"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto border-t border-zinc-800/50 pt-16"
             >
               {features.map((feat, i) => (
                 <div key={i} className="text-left p-6 premium-border rounded-2xl bg-zinc-900/20 hover:bg-zinc-900/50 transition-colors group">
@@ -96,7 +97,7 @@ export default function LandingPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* CTA and Footer Section (Fades in if not analyzing) */}
+      {/* How It Works and Footer Section (Fades in if not analyzing) */}
       <AnimatePresence>
         {!showPlaceholder && !isAnalyzing && (
           <motion.div
@@ -104,9 +105,9 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="w-full mt-32 relative z-10"
+            className="w-full mt-16 relative z-10"
           >
-            <CTASection />
+            <HowItWorksSection />
             <Footer />
           </motion.div>
         )}
