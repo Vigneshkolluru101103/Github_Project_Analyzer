@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
 import ResultCardPlaceholder from '../components/ResultCardPlaceholder';
+import FeatureDetectionCard from '../components/FeatureDetectionCard';
+import AnalysisReportDashboard from '../components/AnalysisReportDashboard';
 import HowItWorksSection from '../components/HowItWorksSection';
 import Footer from '../components/Footer';
 import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
@@ -152,6 +154,11 @@ export default function LandingPage() {
                       <p className="text-xl font-semibold text-emerald-400">Found</p>
                     </div>
                   </div>
+
+                  <AnalysisReportDashboard
+                    evaluation={result.data.evaluation}
+                    recommendations={result.data.recommendations}
+                  />
                   
                   {result.data.technologies && result.data.technologies.length > 0 && (
                     <div className="mb-8">
@@ -166,6 +173,9 @@ export default function LandingPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Feature Detection Grid */}
+                  <FeatureDetectionCard features={result.data.features} />
 
                   <div className="p-5 bg-black/40 rounded-2xl border border-zinc-800/80 shadow-inner group transition-all hover:bg-black/60">
                     <p className="text-xs font-medium text-zinc-500 mb-2 uppercase tracking-wider">Repository URL</p>
