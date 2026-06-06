@@ -8,10 +8,11 @@ const api = axios.create({
   },
 });
 
-export const analyzeRepository = async (repoUrl) => {
+export const analyzeRepository = async (repoUrl, projectType) => {
   try {
     const response = await api.post('/analyze', {
-      repo_url: repoUrl
+      repo_url: repoUrl,
+      project_type: projectType,
     });
     return response.data;
   } catch (error) {

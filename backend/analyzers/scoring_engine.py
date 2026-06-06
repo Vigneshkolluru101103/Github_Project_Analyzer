@@ -1,30 +1,15 @@
 """
 Project Scoring Engine — Calculates quality score from detected features.
 
-Each feature contributes a fixed number of points (max 100 total).
+Weights vary by project type (see project_types.py).
 """
 
-MAX_SCORE = 100
-
-SCORE_WEIGHTS = {
-    "authentication":        20,
-    "database":              20,
-    "api_layer":             15,
-    "testing":               15,
-    "docker":                10,
-    "cicd":                  10,
-    "environment_variables": 10,
-}
-
-FEATURE_LABELS = {
-    "authentication":        "Authentication",
-    "database":              "Database",
-    "api_layer":             "API Layer",
-    "testing":               "Testing",
-    "docker":                "Docker",
-    "cicd":                  "CI/CD",
-    "environment_variables": "Environment Variables",
-}
+from analyzers.project_types import (
+    MAX_SCORE,
+    get_feature_labels,
+    get_score_weights,
+    normalize_project_type,
+)
 
 
 def get_maturity_level(score: int) -> str:
@@ -38,7 +23,7 @@ def get_maturity_level(score: int) -> str:
     return "Beginner"
 
 
-def calculate_score(features: dict) -> dict:
+def calculate_score(features: dict, project_type: str | None = None) -> dict:
     """
     Computes project quality score from feature detection results.
 
@@ -47,17 +32,23 @@ def calculate_score(features: dict) -> dict:
             "score": int,
             "maturity": str,
             "potential_score": int,
+            "project_type": str,
             "strengths": list[str],
             "missing": list[str],
         }
     """
+    normalized_type = normalize_project_type(project_type)
+    weights = get_score_weights(normalized_type)
+    labels = get_feature_labels(normalized_type)
+
     if not features:
         return {
             "score": 0,
             "maturity": "Beginner",
             "potential_score": MAX_SCORE,
+            "project_type": normalized_type,
             "strengths": [],
-            "missing": list(FEATURE_LABELS.values()),
+            "missing": [labels[k] for k in weights],
         }
 
     score = 0
@@ -65,8 +56,8 @@ def calculate_score(features: dict) -> dict:
     strengths = []
     missing = []
 
-    for key, points in SCORE_WEIGHTS.items():
-        label = FEATURE_LABELS.get(key, key.replace("_", " ").title())
+    for key, points in weights.items():
+        label = labels.get(key, key.replace("_", " ").title())
         detected = bool(features.get(key, False))
 
         if detected:
@@ -82,6 +73,7 @@ def calculate_score(features: dict) -> dict:
         "score": score,
         "maturity": get_maturity_level(score),
         "potential_score": min(score + missing_points, MAX_SCORE),
+        "project_type": normalized_type,
         "strengths": strengths,
         "missing": missing,
     }

@@ -272,22 +272,16 @@ FEATURE_DETECTORS = {
 #  PUBLIC API
 # ===================================================================
 
-def detect_features(file_paths: list, owner: str, repo: str) -> dict:
+def detect_features(
+    file_paths: list,
+    owner: str,
+    repo: str,
+    project_type: str | None = None,
+) -> dict:
     """
-    Runs every registered feature detector against the repository.
+    Runs category-specific feature detectors for the project type.
     Returns a dict of { feature_name: bool }.
     """
-    get_content = _build_content_fetcher(owner, repo)
+    from analyzers.category_feature_analyzer import detect_category_features
 
-    # Pre-parse shared dependency data once for all detectors
-    js_deps = _parse_js_deps(get_content)
-    py_deps_text = _collect_python_deps(file_paths, get_content)
-
-    features = {}
-    for name, detector in FEATURE_DETECTORS.items():
-        try:
-            features[name] = detector(file_paths, js_deps, py_deps_text, get_content)
-        except Exception:
-            features[name] = False
-
-    return features
+    return detect_category_features(file_paths, owner, repo, project_type)

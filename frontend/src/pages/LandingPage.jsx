@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ProjectTypeSelect from '../components/ProjectTypeSelect';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
 import ResultCardPlaceholder from '../components/ResultCardPlaceholder';
@@ -12,15 +13,16 @@ import { analyzeRepository } from '../services/api';
 
 export default function LandingPage() {
   const [repoUrl, setRepoUrl] = useState('');
+  const [projectType, setProjectType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleAnalyze = async () => {
-    if (!repoUrl) return;
+    if (!repoUrl || !projectType) return;
     
-    console.log("Analyzing GitHub Repository:", repoUrl);
+    console.log("Analyzing GitHub Repository:", repoUrl, "Type:", projectType);
     
     setIsAnalyzing(true);
     setShowPlaceholder(false);
@@ -28,7 +30,7 @@ export default function LandingPage() {
     setError(null);
 
     try {
-      const data = await analyzeRepository(repoUrl);
+      const data = await analyzeRepository(repoUrl, projectType);
       setResult(data);
     } catch (err) {
       console.error(err);
@@ -82,8 +84,17 @@ export default function LandingPage() {
 
         {/* Input Form */}
         <div className="mb-24">
+          <ProjectTypeSelect
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value)}
+            disabled={isAnalyzing}
+          />
           <GitHubInput value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
-          <AnalyzeButton isLoading={isAnalyzing} onClick={handleAnalyze} />
+          <AnalyzeButton
+            isLoading={isAnalyzing}
+            onClick={handleAnalyze}
+            disabled={!projectType || !repoUrl}
+          />
         </div>
 
         {/* Conditional Layout Rendering */}
@@ -158,6 +169,7 @@ export default function LandingPage() {
                   <AnalysisReportDashboard
                     evaluation={result.data.evaluation}
                     recommendations={result.data.recommendations}
+                    projectType={result.data.project_type}
                   />
                   
                   {result.data.technologies && result.data.technologies.length > 0 && (
@@ -175,7 +187,10 @@ export default function LandingPage() {
                   )}
 
                   {/* Feature Detection Grid */}
-                  <FeatureDetectionCard features={result.data.features} />
+                  <FeatureDetectionCard
+                    features={result.data.features}
+                    projectType={result.data.project_type}
+                  />
 
                   <div className="p-5 bg-black/40 rounded-2xl border border-zinc-800/80 shadow-inner group transition-all hover:bg-black/60">
                     <p className="text-xs font-medium text-zinc-500 mb-2 uppercase tracking-wider">Repository URL</p>

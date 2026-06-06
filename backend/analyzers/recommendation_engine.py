@@ -1,30 +1,10 @@
 """
 Recommendation Engine — Rule-based improvement suggestions from missing features.
+
+Recommendations and point values vary by project type.
 """
 
-from analyzers.scoring_engine import SCORE_WEIGHTS
-
-
-RECOMMENDATION_RULES = {
-    "authentication": {
-        "title": "Implement JWT Authentication",
-    },
-    "database": {
-        "title": "Integrate PostgreSQL or MongoDB",
-    },
-    "testing": {
-        "title": "Add automated testing using pytest or jest",
-    },
-    "docker": {
-        "title": "Containerize the application using Docker",
-    },
-    "cicd": {
-        "title": "Configure GitHub Actions workflow",
-    },
-    "environment_variables": {
-        "title": "Move secrets and configuration into .env files",
-    },
-}
+from analyzers.project_types import get_recommendation_rules, get_score_weights, normalize_project_type
 
 
 def _impact_for_points(points: int) -> str:
@@ -35,23 +15,30 @@ def _impact_for_points(points: int) -> str:
     return "Low"
 
 
-def generate_recommendations(features: dict) -> dict:
+def generate_recommendations(
+    features: dict,
+    project_type: str | None = None,
+) -> dict:
     """
     Builds actionable recommendations for each missing feature.
 
     Returns:
         { "recommendations": [ { "title", "impact", "points" }, ... ] }
     """
+    normalized_type = normalize_project_type(project_type)
+    weights = get_score_weights(normalized_type)
+    rules = get_recommendation_rules(normalized_type)
+
     if not features:
         features = {}
 
     recommendations = []
 
-    for feature_key, rule in RECOMMENDATION_RULES.items():
+    for feature_key, rule in rules.items():
         if features.get(feature_key):
             continue
 
-        points = SCORE_WEIGHTS.get(feature_key, 0)
+        points = weights.get(feature_key, 0)
         recommendations.append({
             "title": rule["title"],
             "impact": _impact_for_points(points),

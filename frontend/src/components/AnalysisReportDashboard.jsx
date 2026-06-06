@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import {
   BarChart3, CheckCircle2, AlertCircle, Lightbulb,
-  TrendingUp, Target, Sparkles,
+  TrendingUp, Target, Sparkles, Layers,
 } from 'lucide-react';
 
 const MATURITY_STYLES = {
@@ -24,16 +24,19 @@ function getScoreColor(score) {
   return { text: 'text-red-400', bar: 'bg-red-500', glow: 'bg-red-500/15' };
 }
 
-export default function AnalysisReportDashboard({ evaluation, recommendations = [] }) {
+export default function AnalysisReportDashboard({ evaluation, recommendations = [], projectType }) {
   if (!evaluation || typeof evaluation.score !== 'number') return null;
 
   const {
     score,
     maturity = 'Beginner',
     potential_score = score,
+    project_type: evalProjectType,
     strengths = [],
     missing = [],
   } = evaluation;
+
+  const displayProjectType = projectType || evalProjectType;
 
   const colors = getScoreColor(score);
   const maturityStyle = MATURITY_STYLES[maturity] || MATURITY_STYLES.Beginner;
@@ -61,16 +64,30 @@ export default function AnalysisReportDashboard({ evaluation, recommendations = 
             </div>
           </div>
 
-          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${maturityStyle}`}>
-            <Sparkles className="w-3.5 h-3.5" />
-            {maturity}
-          </span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            {displayProjectType && (
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border text-indigo-400 bg-indigo-500/10 border-indigo-500/25">
+                <Layers className="w-3.5 h-3.5" />
+                {displayProjectType}
+              </span>
+            )}
+            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${maturityStyle}`}>
+              <Sparkles className="w-3.5 h-3.5" />
+              {maturity}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="p-6 space-y-6 relative z-10">
         {/* Scores row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {displayProjectType && (
+            <div className="p-4 rounded-xl bg-indigo-500/[0.04] border border-indigo-500/20">
+              <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Project Type</p>
+              <p className="text-lg font-bold text-indigo-400">{displayProjectType}</p>
+            </div>
+          )}
           <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60">
             <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Project Maturity</p>
             <p className={`text-xl font-bold ${maturityStyle.split(' ')[0]}`}>{maturity}</p>

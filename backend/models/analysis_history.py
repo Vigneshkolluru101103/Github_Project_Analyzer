@@ -11,6 +11,7 @@ class AnalysisHistory(Base):
     id = Column(Integer, primary_key=True, index=True)
     repo_url = Column(String(512), nullable=False, index=True)
     repo_name = Column(String(255), nullable=False)
+    project_type = Column(String(50), nullable=False, default="Web Application")
     description = Column(Text, nullable=True)
     language = Column(String(100), nullable=True)
     stars = Column(Integer, nullable=True, default=0)

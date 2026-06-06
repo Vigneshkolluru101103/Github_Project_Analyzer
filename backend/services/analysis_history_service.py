@@ -31,15 +31,19 @@ def save_analysis_history(db: Session, repo_data: dict) -> AnalysisHistory:
     fields = _extract_save_fields(repo_data)
     evaluation = repo_data.get("evaluation") or {}
 
+    project_type = repo_data.get("project_type", "Web Application")
+
     print("Saving:")
-    print(f"  repo_name: {fields['repo_name']}")
-    print(f"  stars:     {fields['stars']}")
-    print(f"  forks:     {fields['forks']}")
-    print(f"  language:  {fields['language']}")
+    print(f"  repo_name:     {fields['repo_name']}")
+    print(f"  project_type:  {project_type}")
+    print(f"  stars:         {fields['stars']}")
+    print(f"  forks:         {fields['forks']}")
+    print(f"  language:      {fields['language']}")
 
     logger.info(
-        "Saving analysis — repo_name=%s stars=%s forks=%s language=%s",
+        "Saving analysis — repo_name=%s project_type=%s stars=%s forks=%s language=%s",
         fields["repo_name"],
+        project_type,
         fields["stars"],
         fields["forks"],
         fields["language"],
@@ -48,6 +52,7 @@ def save_analysis_history(db: Session, repo_data: dict) -> AnalysisHistory:
     record = AnalysisHistory(
         repo_url=fields["repo_url"],
         repo_name=fields["repo_name"],
+        project_type=project_type,
         description=fields["description"],
         language=fields["language"],
         stars=fields["stars"],

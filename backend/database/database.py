@@ -212,6 +212,17 @@ def _migrate_analysis_history_schema(db_engine: Engine) -> None:
             )
         print("Migrated analysis_history.created_at -> analyzed_at")
 
+    columns = {col["name"] for col in inspector.get_columns("analysis_history")}
+    if "project_type" not in columns:
+        with db_engine.begin() as connection:
+            connection.execute(
+                text(
+                    "ALTER TABLE analysis_history "
+                    "ADD COLUMN project_type VARCHAR(50) NOT NULL DEFAULT 'Web Application'"
+                )
+            )
+        print("Migrated analysis_history: added project_type column")
+
 
 def verify_database_connection() -> None:
     """
