@@ -46,7 +46,7 @@ export default function LandingPage() {
 
   const executeAnalysis = async () => {
     console.log("Analyzing GitHub Repository:", repoUrl, "Type:", projectType);
-    
+
     setIsAnalyzing(true);
     setShowPlaceholder(false);
     setResult(null);
@@ -82,7 +82,7 @@ export default function LandingPage() {
       {/* Background ambient light */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -101,7 +101,7 @@ export default function LandingPage() {
             Like a Senior Engineer.
           </span>
         </h1>
-        
+
         <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
           Get architecture insights, technology detection, project scoring, resume-ready achievements, and improvement recommendations.
         </p>
@@ -121,65 +121,10 @@ export default function LandingPage() {
           />
         </div>
 
-        {/* Dashboard Widgets for Authenticated Users */}
-        {isAuthenticated && !showPlaceholder && !isAnalyzing && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 text-left border-t border-zinc-800/50 pt-16"
-          >
-            <div className="bg-[#121214] p-6 rounded-2xl border border-white/[0.08]">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3 text-white">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg">
-                    <FolderTree className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <h3 className="font-medium">Recent Activity</h3>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-zinc-300 font-medium">vercel/next.js</span>
-                  <span className="text-zinc-500">2 days ago</span>
-                </div>
-                <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-zinc-300 font-medium">facebook/react</span>
-                  <span className="text-zinc-500">3 days ago</span>
-                </div>
-                <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-zinc-300 font-medium">tailwindlabs/tailwindcss</span>
-                  <span className="text-zinc-500">5 days ago</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-[#121214] p-6 rounded-2xl border border-white/[0.08]">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3 text-white">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg">
-                    <BarChart className="w-5 h-5 text-indigo-400" />
-                  </div>
-                  <h3 className="font-medium">Your Stats</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.04]">
-                  <p className="text-zinc-500 text-[12px] mb-1">Total Analyses</p>
-                  <p className="text-2xl font-semibold text-white">12</p>
-                </div>
-                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.04]">
-                  <p className="text-zinc-500 text-[12px] mb-1">Avg Score</p>
-                  <p className="text-2xl font-semibold text-emerald-400">88<span className="text-[14px] font-normal text-zinc-500">/100</span></p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {/* Conditional Layout Rendering */}
         <AnimatePresence mode="wait">
           {!showPlaceholder && !isAnalyzing && !isAuthenticated ? (
-            <motion.div 
+            <motion.div
               key="features"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -196,7 +141,7 @@ export default function LandingPage() {
               ))}
             </motion.div>
           ) : showPlaceholder ? (
-            <motion.div 
+            <motion.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -225,7 +170,7 @@ export default function LandingPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/80">
                       <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">Primary Language</p>
@@ -250,7 +195,7 @@ export default function LandingPage() {
                     recommendations={result.data.recommendations}
                     projectType={result.data.project_type}
                   />
-                  
+
                   {result.data.technologies && result.data.technologies.length > 0 && (
                     <div className="mb-8">
                       <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">Technology Stack (Informational)</p>
@@ -303,10 +248,10 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        onGuestContinue={handleGuestContinue} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onGuestContinue={handleGuestContinue}
       />
     </div>
   );

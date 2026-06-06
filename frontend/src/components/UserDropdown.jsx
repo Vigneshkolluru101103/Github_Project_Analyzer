@@ -93,17 +93,11 @@ export default function UserDropdown() {
             className="absolute right-0 mt-2 w-56 rounded-xl bg-[#1A1A1C] border border-white/[0.08] shadow-2xl overflow-hidden z-50"
           >
             <div className="p-1">
-              <button onClick={() => { setOpen(false); navigate('/'); }} className="w-full flex items-center px-3 py-2 text-[13px] font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-md transition-colors">
-                Dashboard
-              </button>
               <button onClick={() => { setOpen(false); navigate('/history'); }} className="w-full flex items-center px-3 py-2 text-[13px] font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-md transition-colors">
                 Analysis History
               </button>
-              <button onClick={() => { setOpen(false); navigate('/settings'); }} className="w-full flex items-center px-3 py-2 text-[13px] font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-md transition-colors">
-                Settings
-              </button>
             </div>
-            
+
             <div className="p-1 border-t border-white/[0.04]">
               <button
                 onClick={handleLogout}

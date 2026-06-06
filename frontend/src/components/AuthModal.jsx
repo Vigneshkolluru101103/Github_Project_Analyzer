@@ -53,7 +53,7 @@ export default function AuthModal({ isOpen, onClose, onGuestContinue }) {
         >
           {/* Subtle top highlight */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          
+
           <div className="p-6">
             <div className="flex justify-between items-start mb-5">
               <div>
@@ -85,7 +85,7 @@ export default function AuthModal({ isOpen, onClose, onGuestContinue }) {
                     <li>Access previous analyses</li>
                   </ul>
                 </div>
-                
+
                 {!googleClientId ? (
                   <p className="text-[13px] text-amber-400/90 py-1">Not configured.</p>
                 ) : authLoading ? (
@@ -118,8 +118,8 @@ export default function AuthModal({ isOpen, onClose, onGuestContinue }) {
                     <li>No account required</li>
                   </ul>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={handleGuest}
                   disabled={isGuestLoading || authLoading}
                   className="w-full h-[40px] flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white text-[13px] font-medium rounded-lg border border-white/10 transition-colors disabled:opacity-50"
