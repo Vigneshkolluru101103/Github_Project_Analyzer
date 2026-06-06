@@ -56,7 +56,8 @@ def verify_google_token(credential: str) -> dict:
     if not credential or not credential.strip():
         raise HTTPException(status_code=401, detail="Missing credential")
 
-    if not GOOGLE_CLIENT_ID:
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+    if not google_client_id:
         raise HTTPException(
             status_code=500,
             detail="Google OAuth is not configured on the server (GOOGLE_CLIENT_ID missing).",
@@ -66,13 +67,13 @@ def verify_google_token(credential: str) -> dict:
     print(f"[auth/google] Credential received: yes")
     print(f"[auth/google] Credential length: {len(credential)}")
     print(f"[auth/google] Credential preview: {credential[:20]}...")
-    print(f"[auth/google] GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
+    print(f"[auth/google] google_client_id: {google_client_id}")
 
     try:
         idinfo = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
-            GOOGLE_CLIENT_ID,
+            google_client_id,
             clock_skew_in_seconds=GOOGLE_CLOCK_SKEW_SECONDS,
         )
     except Exception as exc:
@@ -82,10 +83,10 @@ def verify_google_token(credential: str) -> dict:
         raise HTTPException(status_code=401, detail=detail) from exc
 
     token_aud = idinfo.get("aud")
-    if token_aud != GOOGLE_CLIENT_ID:
+    if token_aud != google_client_id:
         detail = (
             f"Wrong audience: token aud={token_aud!r}, "
-            f"expected GOOGLE_CLIENT_ID={GOOGLE_CLIENT_ID!r}"
+            f"expected google_client_id={google_client_id!r}"
         )
         print(f"[auth/google] {detail}")
         raise HTTPException(status_code=401, detail=detail)
@@ -120,6 +121,10 @@ def authenticate_google_user(db: Session, credential: str) -> dict:
     name = claims.get("name", email)
     picture = claims.get("picture")
 
+    print(f"Received Google email: {email}")
+    print(f"Received Google name: {name}")
+    print(f"Received Google picture: {picture}")
+
     if not google_id:
         raise HTTPException(status_code=401, detail="Google token missing sub (google_id)")
 
@@ -142,8 +147,10 @@ def authenticate_google_user(db: Session, credential: str) -> dict:
 
     db.commit()
     db.refresh(user)
+    print("Database insert result: success")
 
     access_token = create_access_token(user.id, user.email)
+    print("JWT creation result: success")
 
     return {
         "access_token": access_token,

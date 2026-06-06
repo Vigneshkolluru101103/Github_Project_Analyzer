@@ -223,6 +223,17 @@ def _migrate_analysis_history_schema(db_engine: Engine) -> None:
             )
         print("Migrated analysis_history: added project_type column")
 
+    columns = {col["name"] for col in inspector.get_columns("analysis_history")}
+    if "user_id" not in columns:
+        with db_engine.begin() as connection:
+            connection.execute(
+                text(
+                    "ALTER TABLE analysis_history "
+                    "ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE"
+                )
+            )
+        print("Migrated analysis_history: added user_id column")
+
 
 def verify_database_connection() -> None:
     """

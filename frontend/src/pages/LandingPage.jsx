@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProjectTypeSelect from '../components/ProjectTypeSelect';
 import GitHubInput from '../components/GitHubInput';
@@ -11,18 +12,39 @@ import HowItWorksSection from '../components/HowItWorksSection';
 import Footer from '../components/Footer';
 import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
 import { analyzeRepository } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from '../components/AuthModal';
 
 export default function LandingPage() {
-  const [repoUrl, setRepoUrl] = useState('');
+  const [searchParams] = useSearchParams();
+  const initialRepoUrl = searchParams.get('repoUrl') || '';
+
+  const [repoUrl, setRepoUrl] = useState(initialRepoUrl);
   const [projectType, setProjectType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const handleAnalyze = async () => {
+  const { isAuthenticated } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [hasChosenGuest, setHasChosenGuest] = useState(false);
+
+  const handleAnalyzeClick = () => {
     if (!repoUrl || !projectType) return;
-    
+    if (!isAuthenticated && !hasChosenGuest) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    executeAnalysis();
+  };
+
+  const handleGuestContinue = () => {
+    setHasChosenGuest(true);
+    executeAnalysis();
+  };
+
+  const executeAnalysis = async () => {
     console.log("Analyzing GitHub Repository:", repoUrl, "Type:", projectType);
     
     setIsAnalyzing(true);
@@ -74,14 +96,14 @@ export default function LandingPage() {
 
         {/* Hero Typography */}
         <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-tight">
-          Review your projects like a <br />
+          Analyze GitHub Projects <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500">
-            Senior Engineer.
+            Like a Senior Engineer.
           </span>
         </h1>
         
         <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-          Drop your GitHub repository below. We analyze your architecture, score your practices, and generate resume-ready bullet points.
+          Get architecture insights, technology detection, project scoring, resume-ready achievements, and improvement recommendations.
         </p>
 
         {/* Input Form */}
@@ -94,14 +116,69 @@ export default function LandingPage() {
           <GitHubInput value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
           <AnalyzeButton
             isLoading={isAnalyzing}
-            onClick={handleAnalyze}
+            onClick={handleAnalyzeClick}
             disabled={!projectType || !repoUrl}
           />
         </div>
 
+        {/* Dashboard Widgets for Authenticated Users */}
+        {isAuthenticated && !showPlaceholder && !isAnalyzing && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 text-left border-t border-zinc-800/50 pt-16"
+          >
+            <div className="bg-[#121214] p-6 rounded-2xl border border-white/[0.08]">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3 text-white">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg">
+                    <FolderTree className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <h3 className="font-medium">Recent Activity</h3>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="text-zinc-300 font-medium">vercel/next.js</span>
+                  <span className="text-zinc-500">2 days ago</span>
+                </div>
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="text-zinc-300 font-medium">facebook/react</span>
+                  <span className="text-zinc-500">3 days ago</span>
+                </div>
+                <div className="flex justify-between items-center text-[13px]">
+                  <span className="text-zinc-300 font-medium">tailwindlabs/tailwindcss</span>
+                  <span className="text-zinc-500">5 days ago</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-[#121214] p-6 rounded-2xl border border-white/[0.08]">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3 text-white">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg">
+                    <BarChart className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <h3 className="font-medium">Your Stats</h3>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.04]">
+                  <p className="text-zinc-500 text-[12px] mb-1">Total Analyses</p>
+                  <p className="text-2xl font-semibold text-white">12</p>
+                </div>
+                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.04]">
+                  <p className="text-zinc-500 text-[12px] mb-1">Avg Score</p>
+                  <p className="text-2xl font-semibold text-emerald-400">88<span className="text-[14px] font-normal text-zinc-500">/100</span></p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Conditional Layout Rendering */}
         <AnimatePresence mode="wait">
-          {!showPlaceholder && !isAnalyzing ? (
+          {!showPlaceholder && !isAnalyzing && !isAuthenticated ? (
             <motion.div 
               key="features"
               initial={{ opacity: 0, y: 20 }}
@@ -226,6 +303,11 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        onGuestContinue={handleGuestContinue} 
+      />
     </div>
   );
 }

@@ -26,7 +26,7 @@ def _extract_save_fields(repo_data: dict) -> dict:
     }
 
 
-def save_analysis_history(db: Session, repo_data: dict) -> AnalysisHistory:
+def save_analysis_history(db: Session, repo_data: dict, user_id: int | None = None) -> AnalysisHistory:
     """Persist a successful repository analysis to the database."""
     fields = _extract_save_fields(repo_data)
     evaluation = repo_data.get("evaluation") or {}
@@ -39,14 +39,16 @@ def save_analysis_history(db: Session, repo_data: dict) -> AnalysisHistory:
     print(f"  stars:         {fields['stars']}")
     print(f"  forks:         {fields['forks']}")
     print(f"  language:      {fields['language']}")
+    print(f"  user_id:       {user_id}")
 
     logger.info(
-        "Saving analysis — repo_name=%s project_type=%s stars=%s forks=%s language=%s",
+        "Saving analysis — repo_name=%s project_type=%s stars=%s forks=%s language=%s user_id=%s",
         fields["repo_name"],
         project_type,
         fields["stars"],
         fields["forks"],
         fields["language"],
+        user_id,
     )
 
     record = AnalysisHistory(
@@ -65,6 +67,7 @@ def save_analysis_history(db: Session, repo_data: dict) -> AnalysisHistory:
         evaluation=evaluation,
         recommendations=repo_data.get("recommendations"),
         analyzed_at=datetime.now(timezone.utc),
+        user_id=user_id,
     )
 
     try:

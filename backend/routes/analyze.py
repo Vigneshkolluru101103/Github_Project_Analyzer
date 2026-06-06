@@ -1,9 +1,11 @@
 import logging
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+import jwt
 
 from analyzers.capabilities import PROJECT_TYPES
 from analyzers.feature_analyzer import detect_features
@@ -11,12 +13,30 @@ from analyzers.recommendation_engine import generate_recommendations
 from analyzers.scoring_engine import calculate_score
 from analyzers.tech_analyzer import detect_technologies
 from database.database import get_db
+from models.analysis_history import AnalysisHistory
 from services.analysis_history_service import save_analysis_history
+from services.jwt_service import decode_access_token
 from services.github_service import fetch_repository_data, fetch_repo_tree
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+security = HTTPBearer(auto_error=False)
+
+def get_current_user_id_optional(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> int | None:
+    if not credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        return int(payload["sub"])
+    except (jwt.PyJWTError, KeyError, ValueError):
+        return None
+
+def get_current_user_id_required(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> int:
+    user_id = get_current_user_id_optional(credentials)
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return user_id
 
 ProjectType = Literal[
     "Web Application",
@@ -36,7 +56,11 @@ class RepoRequest(BaseModel):
 
 
 @router.post("/analyze")
-def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
+def analyze_repo(
+    request: RepoRequest, 
+    db: Session = Depends(get_db),
+    user_id: int | None = Depends(get_current_user_id_optional)
+):
     try:
         project_type = request.project_type
 
@@ -66,10 +90,11 @@ def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
             repo_data["capabilities"], project_type
         )["recommendations"]
 
-        try:
-            save_analysis_history(db, repo_data)
-        except Exception as save_exc:
-            logger.error("Analysis completed but database save failed: %s", save_exc)
+        if user_id:
+            try:
+                save_analysis_history(db, repo_data, user_id=user_id)
+            except Exception as save_exc:
+                logger.error("Analysis completed but database save failed: %s", save_exc)
 
         return {
             "message": "Repository analyzed successfully",
@@ -87,3 +112,54 @@ def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
 @router.get("/project-types")
 def list_project_types():
     return {"project_types": list(PROJECT_TYPES)}
+
+
+@router.get("/history")
+def get_history(
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id_required)
+):
+    records = db.query(AnalysisHistory).filter(AnalysisHistory.user_id == user_id).order_by(AnalysisHistory.analyzed_at.desc()).all()
+    return [
+        {
+            "id": r.id,
+            "name": r.repo_name,
+            "project_type": r.project_type,
+            "score": r.score,
+            "date": r.analyzed_at.strftime("%Y-%m-%d"),
+        }
+        for r in records
+    ]
+
+
+@router.get("/analysis/{analysis_id}")
+def get_analysis_by_id(
+    analysis_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id_required)
+):
+    record = db.query(AnalysisHistory).filter(AnalysisHistory.id == analysis_id, AnalysisHistory.user_id == user_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+        
+    return {
+        "message": "Analysis retrieved successfully",
+        "data": {
+            "repo_url": record.repo_url,
+            "name": record.repo_name,
+            "project_type": record.project_type,
+            "description": record.description,
+            "language": record.language,
+            "stars": record.stars,
+            "forks": record.forks,
+            "score": record.score,
+            "maturity": record.maturity,
+            "potential_score": record.potential_score,
+            "technologies": record.technologies,
+            "features": record.features,
+            "capabilities": record.features,
+            "evaluation": record.evaluation,
+            "recommendations": record.recommendations,
+            "analyzed_at": record.analyzed_at.isoformat() if record.analyzed_at else None,
+        }
+    }

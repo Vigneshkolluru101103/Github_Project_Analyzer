@@ -19,8 +19,16 @@ class GoogleAuthRequest(BaseModel):
 @router.post("/google")
 def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
     """Verify Google credential and return app JWT + user profile."""
-    print("[auth/google] POST /auth/google received")
-    return authenticate_google_user(db, request.credential)
+    try:
+        print("[auth/google] POST /auth/google received")
+        return authenticate_google_user(db, request.credential)
+    except Exception as e:
+        import traceback
+        print("GOOGLE AUTH CRASH")
+        print(str(e))
+        traceback.print_exc()
+        raise
+
 
 
 @router.get("/me")

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, JSON, String, Text, func
+from sqlalchemy import Column, DateTime, Integer, JSON, String, Text, func, ForeignKey
 
 from database.database import Base
 
@@ -24,3 +24,4 @@ class AnalysisHistory(Base):
     evaluation = Column(JSON, nullable=True)
     recommendations = Column(JSON, nullable=True)
     analyzed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
