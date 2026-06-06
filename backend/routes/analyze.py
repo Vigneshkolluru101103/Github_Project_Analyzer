@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from analyzers.capabilities import PROJECT_TYPES
 from analyzers.feature_analyzer import detect_features
-from analyzers.project_types import PROJECT_TYPES
 from analyzers.recommendation_engine import generate_recommendations
 from analyzers.scoring_engine import calculate_score
 from analyzers.tech_analyzer import detect_technologies
@@ -20,10 +20,10 @@ router = APIRouter()
 
 ProjectType = Literal[
     "Web Application",
+    "Backend API",
+    "Mobile App",
     "Machine Learning",
     "Data Science",
-    "Mobile App",
-    "Backend API",
 ]
 
 
@@ -40,7 +40,6 @@ def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
     try:
         project_type = request.project_type
 
-        # 1. Fetch core repo metadata from GitHub
         repo_data = fetch_repository_data(request.repo_url)
         repo_data["project_type"] = project_type
 
@@ -48,18 +47,25 @@ def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
         repo_name = repo_data["repo_name"]
         branch = repo_data["default_branch"]
 
-        # 2. Fetch file tree once (shared by all analyzers)
         file_paths = fetch_repo_tree(owner, repo_name, branch)
 
-        # 3. Run analyzers (scoring & recommendations depend on project_type)
+        # Technologies: informational stack detection (not scored individually)
         repo_data["technologies"] = detect_technologies(file_paths, owner, repo_name)
-        repo_data["features"] = detect_features(file_paths, owner, repo_name, project_type)
-        repo_data["evaluation"] = calculate_score(repo_data["features"], project_type)
+
+        # Capabilities: scored architectural building blocks
+        repo_data["capabilities"] = detect_features(
+            file_paths, owner, repo_name, project_type,
+            technologies=repo_data["technologies"],
+        )
+
+        # Backward-compatible alias for DB / legacy consumers
+        repo_data["features"] = repo_data["capabilities"]
+
+        repo_data["evaluation"] = calculate_score(repo_data["capabilities"], project_type)
         repo_data["recommendations"] = generate_recommendations(
-            repo_data["features"], project_type
+            repo_data["capabilities"], project_type
         )["recommendations"]
 
-        # 4. Save analysis history to PostgreSQL
         try:
             save_analysis_history(db, repo_data)
         except Exception as save_exc:
@@ -80,5 +86,4 @@ def analyze_repo(request: RepoRequest, db: Session = Depends(get_db)):
 
 @router.get("/project-types")
 def list_project_types():
-    """Return supported project type options for the frontend."""
     return {"project_types": list(PROJECT_TYPES)}

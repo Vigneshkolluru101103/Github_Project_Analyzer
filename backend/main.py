@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database.database import create_tables, verify_database_connection
 from routes.analyze import router as analyze_router
+from routes.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ app.add_middleware(
 
 # Include the external routes
 app.include_router(analyze_router)
+app.include_router(auth_router)
 
 
 @app.get("/")

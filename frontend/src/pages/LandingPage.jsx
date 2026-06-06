@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 import ProjectTypeSelect from '../components/ProjectTypeSelect';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
@@ -12,6 +14,7 @@ import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
 import { analyzeRepository } from '../services/api';
 
 export default function LandingPage() {
+  const { user } = useAuth();
   const [repoUrl, setRepoUrl] = useState('');
   const [projectType, setProjectType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -54,7 +57,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-32 overflow-x-hidden relative">
-      
+      <Navbar />
+
       {/* Background ambient light */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
@@ -64,6 +68,25 @@ export default function LandingPage() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="w-full max-w-4xl mx-auto text-center relative z-10 px-6"
       >
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full premium-border bg-zinc-900/50 backdrop-blur-sm mb-6"
+          >
+            <img
+              src={user.picture}
+              alt={user.name}
+              className="w-8 h-8 rounded-full ring-1 ring-zinc-700"
+              referrerPolicy="no-referrer"
+            />
+            <div className="text-left">
+              <p className="text-sm font-medium text-zinc-100">{user.name}</p>
+              <p className="text-xs text-zinc-500">{user.email}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Pill Badge */}
         <div className="inline-flex items-center px-4 py-1.5 rounded-full premium-border bg-zinc-900/50 backdrop-blur-sm text-zinc-400 text-xs font-medium mb-8">
           <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
@@ -174,7 +197,7 @@ export default function LandingPage() {
                   
                   {result.data.technologies && result.data.technologies.length > 0 && (
                     <div className="mb-8">
-                      <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">Detected Technologies</p>
+                      <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">Technology Stack (Informational)</p>
                       <div className="flex flex-wrap gap-2">
                         {result.data.technologies.map((tech, idx) => (
                           <span key={idx} className="px-3 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-sm text-zinc-300 flex items-center shadow-sm">
@@ -186,9 +209,8 @@ export default function LandingPage() {
                     </div>
                   )}
 
-                  {/* Feature Detection Grid */}
                   <FeatureDetectionCard
-                    features={result.data.features}
+                    capabilities={result.data.capabilities || result.data.features}
                     projectType={result.data.project_type}
                   />
 

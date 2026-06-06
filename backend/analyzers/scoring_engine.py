@@ -1,19 +1,11 @@
 """
-Project Scoring Engine — Calculates quality score from detected features.
-
-Weights vary by project type (see project_types.py).
+Project Scoring Engine — scores capabilities, not individual technologies.
 """
 
-from analyzers.project_types import (
-    MAX_SCORE,
-    get_feature_labels,
-    get_score_weights,
-    normalize_project_type,
-)
+from analyzers.capabilities import MAX_SCORE, get_capability_labels, get_score_weights, normalize_project_type
 
 
 def get_maturity_level(score: int) -> str:
-    """Maps a score to a project maturity label."""
     if score >= 86:
         return "Production Ready"
     if score >= 61:
@@ -23,25 +15,25 @@ def get_maturity_level(score: int) -> str:
     return "Beginner"
 
 
-def calculate_score(features: dict, project_type: str | None = None) -> dict:
-    """
-    Computes project quality score from feature detection results.
+def _capability_detected(capabilities: dict, key: str) -> bool:
+    """Read detected flag from bool map or detailed capability dict."""
+    value = capabilities.get(key)
+    if isinstance(value, dict):
+        return bool(value.get("detected"))
+    return bool(value)
 
-    Returns:
-        {
-            "score": int,
-            "maturity": str,
-            "potential_score": int,
-            "project_type": str,
-            "strengths": list[str],
-            "missing": list[str],
-        }
+
+def calculate_score(capabilities: dict, project_type: str | None = None) -> dict:
+    """
+    Computes project quality score from capability detection results.
+
+    Each capability contributes its full weight when ANY indicator is present.
     """
     normalized_type = normalize_project_type(project_type)
     weights = get_score_weights(normalized_type)
-    labels = get_feature_labels(normalized_type)
+    labels = get_capability_labels(normalized_type)
 
-    if not features:
+    if not capabilities:
         return {
             "score": 0,
             "maturity": "Beginner",
@@ -58,9 +50,7 @@ def calculate_score(features: dict, project_type: str | None = None) -> dict:
 
     for key, points in weights.items():
         label = labels.get(key, key.replace("_", " ").title())
-        detected = bool(features.get(key, False))
-
-        if detected:
+        if _capability_detected(capabilities, key):
             score += points
             strengths.append(label)
         else:

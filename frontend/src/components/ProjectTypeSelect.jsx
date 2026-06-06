@@ -2,10 +2,10 @@ import { Layers } from 'lucide-react';
 
 export const PROJECT_TYPES = [
   'Web Application',
+  'Backend API',
+  'Mobile App',
   'Machine Learning',
   'Data Science',
-  'Mobile App',
-  'Backend API',
 ];
 
 export default function ProjectTypeSelect({ value, onChange, disabled = false }) {

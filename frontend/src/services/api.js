@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Create an Axios instance pointing to our FastAPI backend
 const api = axios.create({
   baseURL: 'http://localhost:8000',
   headers: {
@@ -8,14 +7,45 @@ const api = axios.create({
   },
 });
 
-export const analyzeRepository = async (repoUrl, projectType) => {
-  try {
-    const response = await api.post('/analyze', {
-      repo_url: repoUrl,
-      project_type: projectType,
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
+export function setAuthToken(token) {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common.Authorization;
   }
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('gpa_access_token');
+      localStorage.removeItem('gpa_user');
+      delete api.defaults.headers.common.Authorization;
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+export const loginWithGoogle = async (token) => {
+  const response = await api.post('/auth/google', { token });
+  return response.data;
 };
+
+export const fetchCurrentUser = async () => {
+  const response = await api.get('/auth/me');
+  return response.data;
+};
+
+export const analyzeRepository = async (repoUrl, projectType) => {
+  const response = await api.post('/analyze', {
+    repo_url: repoUrl,
+    project_type: projectType,
+  });
+  return response.data;
+};
+
+export default api;

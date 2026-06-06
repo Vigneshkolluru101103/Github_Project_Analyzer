@@ -1,87 +1,92 @@
 import { motion } from 'framer-motion';
 import {
-  Shield, Database, Globe, FlaskConical, Box, GitBranch, KeyRound,
-  Check, X, Smartphone, HardDrive, FileText, Table2, Brain,
-  BarChart2, BookOpen, Package, Rocket, LineChart, FileBarChart,
+  Shield, Database, Globe, FlaskConical, KeyRound, Check, X,
+  Smartphone, HardDrive, FileText, Table2, Brain, BarChart2,
+  BookOpen, LineChart, FileBarChart, Layout, Server, FileSearch,
 } from 'lucide-react';
 
-const FEATURE_MAP = {
-  authentication: { icon: Shield, label: 'Authentication', desc: 'JWT, OAuth, login flows' },
-  database: { icon: Database, label: 'Database', desc: 'SQL, NoSQL, ORM integration' },
-  api_layer: { icon: Globe, label: 'API Layer', desc: 'REST routes and endpoints' },
-  testing: { icon: FlaskConical, label: 'Testing', desc: 'Unit and integration tests' },
-  docker: { icon: Box, label: 'Docker', desc: 'Containerization setup' },
-  cicd: { icon: GitBranch, label: 'CI/CD', desc: 'Automated pipelines' },
-  environment_variables: { icon: KeyRound, label: 'Environment Variables', desc: '.env configuration' },
-  api_integration: { icon: Globe, label: 'API Integration', desc: 'Backend API client calls' },
-  local_storage: { icon: HardDrive, label: 'Local Storage', desc: 'On-device data persistence' },
-  documentation: { icon: BookOpen, label: 'Documentation', desc: 'README and project docs' },
-  dataset: { icon: Table2, label: 'Dataset', desc: 'Structured data files' },
-  model_files: { icon: Brain, label: 'Model Files', desc: 'Trained model artifacts' },
-  evaluation_metrics: { icon: BarChart2, label: 'Evaluation Metrics', desc: 'Model performance metrics' },
-  requirements_file: { icon: Package, label: 'Requirements File', desc: 'Dependency management' },
-  deployment: { icon: Rocket, label: 'Deployment', desc: 'Model serving infrastructure' },
-  eda_notebook: { icon: FileText, label: 'EDA Notebook', desc: 'Exploratory analysis notebooks' },
-  visualizations: { icon: LineChart, label: 'Visualizations', desc: 'Charts and plots' },
-  insights_reports: { icon: FileBarChart, label: 'Insights/Reports', desc: 'Analysis findings' },
+const CAPABILITY_META = {
+  frontend_framework: { icon: Layout, desc: 'React, Vue, Angular, Svelte, Next.js' },
+  backend_framework: { icon: Server, desc: 'FastAPI, Flask, Django, Express' },
+  database: { icon: Database, desc: 'PostgreSQL, MySQL, MongoDB, Firebase' },
+  authentication: { icon: Shield, desc: 'JWT, OAuth, Clerk, Auth0' },
+  testing: { icon: FlaskConical, desc: 'Jest, Cypress, Playwright, Pytest' },
+  api_documentation: { icon: FileSearch, desc: 'Swagger, OpenAPI, ReDoc' },
+  mobile_framework: { icon: Smartphone, desc: 'Flutter, React Native, Android, iOS' },
+  storage: { icon: HardDrive, desc: 'SQLite, Hive, SharedPreferences, Room' },
+  api_integration: { icon: Globe, desc: 'REST API, GraphQL clients' },
+  ml_framework: { icon: Brain, desc: 'TensorFlow, PyTorch, Scikit-Learn' },
+  dataset: { icon: Table2, desc: 'CSV, datasets, data folders' },
+  model: { icon: Brain, desc: 'Trained model artifacts' },
+  evaluation: { icon: BarChart2, desc: 'Accuracy, F1, confusion matrix' },
+  documentation: { icon: BookOpen, desc: 'README, project docs' },
+  data_processing: { icon: Table2, desc: 'Pandas, NumPy, SciPy' },
+  visualization: { icon: LineChart, desc: 'Matplotlib, Seaborn, Plotly' },
+  eda: { icon: FileText, desc: 'Jupyter notebooks, exploratory analysis' },
 };
 
-const FEATURE_ORDER_BY_TYPE = {
+const ORDER_BY_TYPE = {
   'Web Application': [
-    'authentication', 'database', 'api_layer', 'testing',
-    'docker', 'cicd', 'environment_variables',
+    'frontend_framework', 'backend_framework', 'database', 'authentication', 'testing',
   ],
   'Backend API': [
-    'api_layer', 'authentication', 'database', 'testing', 'docker', 'cicd',
+    'backend_framework', 'database', 'authentication', 'api_documentation', 'testing',
   ],
   'Mobile App': [
-    'authentication', 'api_integration', 'local_storage', 'database',
-    'testing', 'cicd', 'documentation',
+    'mobile_framework', 'authentication', 'storage', 'api_integration', 'testing',
   ],
   'Machine Learning': [
-    'dataset', 'model_files', 'evaluation_metrics',
-    'documentation', 'requirements_file', 'deployment',
+    'ml_framework', 'dataset', 'model', 'evaluation', 'documentation',
   ],
   'Data Science': [
-    'dataset', 'eda_notebook', 'visualizations',
-    'documentation', 'requirements_file', 'insights_reports',
+    'data_processing', 'visualization', 'dataset', 'eda', 'documentation',
   ],
 };
 
-export default function FeatureDetectionCard({ features, projectType }) {
-  if (!features || Object.keys(features).length === 0) return null;
+function normalizeCapabilities(capabilities) {
+  if (!capabilities) return [];
 
-  const order = FEATURE_ORDER_BY_TYPE[projectType] || Object.keys(features);
-  const entries = order
-    .filter((key) => key in features)
-    .map((key) => [key, features[key]]);
+  const order = ORDER_BY_TYPE[capabilities.projectType] || Object.keys(capabilities.data || capabilities);
 
-  const detectedCount = entries.filter(([, v]) => v).length;
+  const data = capabilities.data || capabilities;
+  const keys = Array.isArray(order) ? order : Object.keys(data);
+
+  return keys
+    .filter((key) => data[key])
+    .map((key) => {
+      const entry = data[key];
+      if (typeof entry === 'object' && entry !== null && 'detected' in entry) {
+        return [key, entry.detected, entry.label, entry.matched || [], entry.evidence || []];
+      }
+      return [key, Boolean(entry), key.replace(/_/g, ' '), [], []];
+    });
+}
+
+export default function FeatureDetectionCard({ features, capabilities, projectType }) {
+  const source = capabilities || features;
+  if (!source || Object.keys(source).length === 0) return null;
+
+  const entries = normalizeCapabilities({ data: source, projectType });
+  const detectedCount = entries.filter(([, detected]) => detected).length;
 
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Smartphone className="w-4 h-4 text-zinc-500 hidden sm:block" />
-          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-            {projectType ? `${projectType} Features` : 'Feature Detection'}
-          </p>
-        </div>
+        <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+          {projectType ? `${projectType} Capabilities` : 'Capability Detection'}
+        </p>
         <span className="text-xs font-medium text-zinc-500">
           <span className="text-emerald-400">{detectedCount}</span>
           <span className="mx-0.5">/</span>
-          {entries.length} detected
+          {entries.length} present
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {entries.map(([key, detected], idx) => {
-          const meta = FEATURE_MAP[key] || {
-            icon: KeyRound,
-            label: key.replace(/_/g, ' '),
-            desc: '',
-          };
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {entries.map(([key, detected, label, matched, evidenceList], idx) => {
+          const meta = CAPABILITY_META[key] || { icon: KeyRound, desc: '' };
           const Icon = meta.icon;
+          const displayLabel = label || key.replace(/_/g, ' ');
 
           return (
             <motion.div
@@ -111,13 +116,8 @@ export default function FeatureDetectionCard({ features, projectType }) {
                     }
                   `}
                 >
-                  <Icon
-                    className={`w-4 h-4 transition-colors ${
-                      detected ? 'text-emerald-400' : 'text-zinc-600'
-                    }`}
-                  />
+                  <Icon className={`w-4 h-4 ${detected ? 'text-emerald-400' : 'text-zinc-600'}`} />
                 </div>
-
                 <div
                   className={`
                     w-5 h-5 rounded-full flex items-center justify-center
@@ -135,16 +135,29 @@ export default function FeatureDetectionCard({ features, projectType }) {
                 </div>
               </div>
 
-              <p
-                className={`text-sm font-medium relative z-10 transition-colors ${
-                  detected ? 'text-zinc-200' : 'text-zinc-500'
-                }`}
-              >
-                {meta.label}
+              <p className={`text-sm font-medium relative z-10 ${detected ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                {displayLabel}
               </p>
-              <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed relative z-10">
-                {meta.desc}
-              </p>
+              {detected && evidenceList.length > 0 ? (
+                <div className="mt-2 relative z-10">
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Evidence</p>
+                  <ul className="space-y-0.5">
+                    {evidenceList.slice(0, 4).map((ev, i) => (
+                      <li key={i} className="text-[11px] text-emerald-400/80 font-mono truncate">
+                        • {ev.value}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : detected && matched.length > 0 ? (
+                <p className="text-[11px] text-emerald-400/70 mt-1 relative z-10">
+                  via {matched.slice(0, 2).join(', ')}
+                </p>
+              ) : (
+                <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed relative z-10">
+                  {meta.desc}
+                </p>
+              )}
             </motion.div>
           );
         })}
