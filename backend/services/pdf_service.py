@@ -229,6 +229,44 @@ def generate_report_pdf(report_data: dict) -> io.BytesIO:
         add_hr()
         
     # ---------------------------------------------------------
+    # Score Breakdown
+    # ---------------------------------------------------------
+    breakdown = _parse_field(evaluation.get("breakdown", []), [])
+    if isinstance(breakdown, dict):
+        breakdown = [breakdown]
+        
+    if breakdown:
+        Story.append(Paragraph("Score Breakdown", styles['SectionHeader']))
+        
+        bd_data = []
+        for item in breakdown:
+            if isinstance(item, dict):
+                cat = item.get("category", "Unknown")
+                sc = item.get("score", 0)
+                max_sc = item.get("max_score", 0)
+                bd_data.append([
+                    Paragraph(f"{cat}", styles['NormalText']), 
+                    Paragraph(f"{sc}/{max_sc}", styles['NormalText'])
+                ])
+                
+        if bd_data:
+            # Add Total Score at the bottom
+            bd_data.append([
+                Paragraph("<b>Total Score</b>", styles['NormalText']),
+                Paragraph(f"<b>{score}/100</b>", styles['NormalText'])
+            ])
+            t_bd = Table(bd_data, colWidths=[200, 260])
+            t_bd.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+                ('LINEABOVE', (0, -1), (-1, -1), 1, colors.HexColor('#E5E7EB')),
+                ('TOPPADDING', (0, -1), (-1, -1), 10),
+            ]))
+            Story.append(t_bd)
+            
+        add_hr()
+
+    # ---------------------------------------------------------
     # Project Evaluation
     # ---------------------------------------------------------
     Story.append(Paragraph("Project Evaluation", styles['SectionHeader']))

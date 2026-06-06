@@ -14,6 +14,7 @@ import { FolderTree, Blocks, Route, Download, Loader2 } from 'lucide-react';
 import { analyzeRepository, downloadSavedReportPdf, downloadRawReportPdf } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
+import toast from 'react-hot-toast';
 
 export default function LandingPage() {
   const [searchParams] = useSearchParams();
@@ -113,7 +114,12 @@ export default function LandingPage() {
       } else if (err.response?.data?.detail) {
         errorMsg = err.response.data.detail;
       }
-      alert(errorMsg);
+      toast.error(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">PDF Download Failed</span>
+          <span className="text-zinc-400 text-sm">{errorMsg}</span>
+        </div>
+      );
     } finally {
       setIsDownloading(false);
       setDownloadStatus("Download PDF");

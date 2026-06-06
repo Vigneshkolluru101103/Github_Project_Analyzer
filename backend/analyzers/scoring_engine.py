@@ -47,15 +47,29 @@ def calculate_score(capabilities: dict, project_type: str | None = None) -> dict
     missing_points = 0
     strengths = []
     missing = []
+    breakdown = []
 
     for key, points in weights.items():
         label = labels.get(key, key.replace("_", " ").title())
-        if _capability_detected(capabilities, key):
+        is_detected = _capability_detected(capabilities, key)
+        if is_detected:
             score += points
             strengths.append(label)
+            breakdown.append({
+                "category": label,
+                "score": points,
+                "max_score": points,
+                "reason": f"{label} detected and configured."
+            })
         else:
             missing.append(label)
             missing_points += points
+            breakdown.append({
+                "category": label,
+                "score": 0,
+                "max_score": points,
+                "reason": f"No {label.lower()} implementation found."
+            })
 
     score = min(score, MAX_SCORE)
 
@@ -66,4 +80,5 @@ def calculate_score(capabilities: dict, project_type: str | None = None) -> dict
         "project_type": normalized_type,
         "strengths": strengths,
         "missing": missing,
+        "breakdown": breakdown,
     }

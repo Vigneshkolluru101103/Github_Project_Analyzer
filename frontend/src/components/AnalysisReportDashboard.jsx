@@ -127,6 +127,54 @@ export default function AnalysisReportDashboard({ evaluation, recommendations = 
           </div>
         </div>
 
+        {/* Score Breakdown */}
+        {evaluation.breakdown && evaluation.breakdown.length > 0 && (
+          <div className="pt-2">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-4 h-4 text-indigo-400" />
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                Score Breakdown
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {evaluation.breakdown.map((item, idx) => {
+                const percentage = (item.score / item.max_score) * 100;
+                const isFull = item.score === item.max_score;
+                return (
+                  <motion.div
+                    key={item.category}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + idx * 0.05 }}
+                    className="p-3.5 rounded-xl bg-zinc-900/30 border border-zinc-800/60 relative group hover:bg-zinc-800/40 transition-colors"
+                  >
+                    <div className="flex justify-between items-center mb-2.5">
+                      <span className="text-[13px] font-medium text-zinc-300">{item.category}</span>
+                      <span className={`text-xs font-bold ${isFull ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                        {item.score}/{item.max_score}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${isFull ? 'bg-emerald-500' : 'bg-zinc-600'}`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    
+                    {/* Tooltip */}
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+8px)] w-max max-w-[240px] bg-zinc-800 text-zinc-200 text-xs p-2.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                      <p className="font-semibold mb-1 text-white">{item.category}: {item.score}/{item.max_score}</p>
+                      <p className="text-zinc-400 leading-relaxed break-words whitespace-pre-wrap">{item.reason}</p>
+                      {/* Triangle pointer */}
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-zinc-800" />
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Strengths & missing */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/15">

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 
 export default function UserDropdown() {
   const navigate = useNavigate();
@@ -11,8 +12,24 @@ export default function UserDropdown() {
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
-    setOpen(false);
+    try {
+      logout();
+      setOpen(false);
+      navigate('/');
+      toast.success(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">Logged Out Successfully</span>
+          <span className="text-zinc-400 text-sm">You have been signed out.</span>
+        </div>
+      );
+    } catch (err) {
+      toast.error(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">Logout Failed</span>
+          <span className="text-zinc-400 text-sm">Please refresh and try again.</span>
+        </div>
+      );
+    }
   };
 
   const handleSuccess = async (response) => {
@@ -25,6 +42,12 @@ export default function UserDropdown() {
 
   const handleError = () => {
     console.error('Google Login Failed');
+    toast.error(
+      <div className="flex flex-col">
+        <span className="font-semibold text-white">Login Failed</span>
+        <span className="text-zinc-400 text-sm">Please try again.</span>
+      </div>
+    );
   };
 
   const ref = useRef(null);

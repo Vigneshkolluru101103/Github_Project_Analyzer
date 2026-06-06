@@ -7,6 +7,7 @@ import FeatureDetectionCard from '../components/FeatureDetectionCard';
 import { FolderTree, Blocks, ArrowLeft, RefreshCw, Loader2, AlertCircle, Download } from 'lucide-react';
 import api, { downloadSavedReportPdf } from '../services/api';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 export default function ReportPage() {
   const { id } = useParams();
@@ -89,7 +90,12 @@ export default function ReportPage() {
       } else if (err.response?.data?.detail) {
         errorMsg = err.response.data.detail;
       }
-      alert(errorMsg);
+      toast.error(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">PDF Download Failed</span>
+          <span className="text-zinc-400 text-sm">{errorMsg}</span>
+        </div>
+      );
     } finally {
       setIsDownloading(false);
       setDownloadStatus("Download PDF");

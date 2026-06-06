@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api, { setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -68,6 +69,12 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.post('/auth/google', { credential });
       persistSession(data.access_token, data.user);
+      toast.success(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">Login Successful</span>
+          <span className="text-zinc-400 text-sm">Welcome back!</span>
+        </div>
+      );
       return data.user;
     } catch (err) {
       const detail = err.response?.data?.detail;
@@ -75,6 +82,12 @@ export function AuthProvider({ children }) {
         || (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
         || (err.request ? 'Network error. Is the backend running?' : 'Login failed. Please try again.');
       setError(message);
+      toast.error(
+        <div className="flex flex-col">
+          <span className="font-semibold text-white">Login Failed</span>
+          <span className="text-zinc-400 text-sm">Please try again.</span>
+        </div>
+      );
       throw new Error(message);
     } finally {
       setAuthLoading(false);
