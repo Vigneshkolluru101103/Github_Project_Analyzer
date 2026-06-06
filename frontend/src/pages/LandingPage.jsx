@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
-import { useAuth } from '../context/AuthContext';
 import ProjectTypeSelect from '../components/ProjectTypeSelect';
 import GitHubInput from '../components/GitHubInput';
 import AnalyzeButton from '../components/AnalyzeButton';
@@ -14,7 +13,6 @@ import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
 import { analyzeRepository } from '../services/api';
 
 export default function LandingPage() {
-  const { user } = useAuth();
   const [repoUrl, setRepoUrl] = useState('');
   const [projectType, setProjectType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -68,25 +66,6 @@ export default function LandingPage() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="w-full max-w-4xl mx-auto text-center relative z-10 px-6"
       >
-        {user && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-3 px-4 py-2 rounded-full premium-border bg-zinc-900/50 backdrop-blur-sm mb-6"
-          >
-            <img
-              src={user.picture}
-              alt={user.name}
-              className="w-8 h-8 rounded-full ring-1 ring-zinc-700"
-              referrerPolicy="no-referrer"
-            />
-            <div className="text-left">
-              <p className="text-sm font-medium text-zinc-100">{user.name}</p>
-              <p className="text-xs text-zinc-500">{user.email}</p>
-            </div>
-          </motion.div>
-        )}
-
         {/* Pill Badge */}
         <div className="inline-flex items-center px-4 py-1.5 rounded-full premium-border bg-zinc-900/50 backdrop-blur-sm text-zinc-400 text-xs font-medium mb-8">
           <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
