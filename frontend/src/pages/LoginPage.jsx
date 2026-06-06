@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Hexagon, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
 
 export default function LoginPage() {
   const navigate = useNavigate();

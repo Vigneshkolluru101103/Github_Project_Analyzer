@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 import jwt
@@ -13,13 +13,14 @@ security = HTTPBearer(auto_error=False)
 
 
 class GoogleAuthRequest(BaseModel):
-    token: str
+    credential: str = Field(..., min_length=1)
 
 
 @router.post("/google")
 def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
     """Verify Google credential and return app JWT + user profile."""
-    return authenticate_google_user(db, request.token)
+    print("[auth/google] POST /auth/google received")
+    return authenticate_google_user(db, request.credential)
 
 
 @router.get("/me")

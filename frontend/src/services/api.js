@@ -18,7 +18,8 @@ export function setAuthToken(token) {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isGoogleLogin = error.config?.url?.includes('/auth/google');
+    if (error.response?.status === 401 && !isGoogleLogin) {
       localStorage.removeItem('gpa_access_token');
       localStorage.removeItem('gpa_user');
       delete api.defaults.headers.common.Authorization;
@@ -30,8 +31,8 @@ api.interceptors.response.use(
   },
 );
 
-export const loginWithGoogle = async (token) => {
-  const response = await api.post('/auth/google', { token });
+export const loginWithGoogle = async (credential) => {
+  const response = await api.post('/auth/google', { credential });
   return response.data;
 };
 

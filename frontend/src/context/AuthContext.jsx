@@ -66,11 +66,13 @@ export function AuthProvider({ children }) {
     setError(null);
 
     try {
-      const { data } = await api.post('/auth/google', { token: credential });
+      const { data } = await api.post('/auth/google', { credential });
       persistSession(data.access_token, data.user);
       return data.user;
     } catch (err) {
-      const message = err.response?.data?.detail
+      const detail = err.response?.data?.detail;
+      const message = (typeof detail === 'string' ? detail : null)
+        || (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
         || (err.request ? 'Network error. Is the backend running?' : 'Login failed. Please try again.');
       setError(message);
       throw new Error(message);

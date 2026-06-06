@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,11 +7,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from database.database import create_tables, verify_database_connection
 from routes.analyze import router as analyze_router
 from routes.auth import router as auth_router
+from services.auth_service import GOOGLE_CLIENT_ID, log_google_client_id_on_startup
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Verify Supabase PostgreSQL connection on startup."""
+    log_google_client_id_on_startup()
+
+    frontend_client_id = os.getenv("VITE_GOOGLE_CLIENT_ID", "").strip()
+    if frontend_client_id and GOOGLE_CLIENT_ID and frontend_client_id != GOOGLE_CLIENT_ID:
+        print(
+            "[auth] WARNING: Client ID mismatch — "
+            f"VITE_GOOGLE_CLIENT_ID={frontend_client_id!r} "
+            f"!= GOOGLE_CLIENT_ID={GOOGLE_CLIENT_ID!r}"
+        )
+    elif frontend_client_id and GOOGLE_CLIENT_ID:
+        print("[auth] Frontend and backend Google client IDs match")
+
     try:
         verify_database_connection()
         create_tables()
