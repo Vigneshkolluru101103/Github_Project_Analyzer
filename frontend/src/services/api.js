@@ -49,4 +49,18 @@ export const analyzeRepository = async (repoUrl, projectType) => {
   return response.data;
 };
 
+export const downloadSavedReportPdf = async (id) => {
+  const response = await api.get(`/analysis/${id}/pdf`, {
+    responseType: 'blob',
+  });
+  return response;
+};
+
+export const downloadRawReportPdf = async (reportData) => {
+  const response = await api.post('/analysis/pdf/raw', reportData, {
+    responseType: 'blob',
+  });
+  return response;
+};
+
 export default api;

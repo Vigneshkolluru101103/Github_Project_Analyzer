@@ -10,8 +10,8 @@ import FeatureDetectionCard from '../components/FeatureDetectionCard';
 import AnalysisReportDashboard from '../components/AnalysisReportDashboard';
 import HowItWorksSection from '../components/HowItWorksSection';
 import Footer from '../components/Footer';
-import { FolderTree, Blocks, BarChart, Route } from 'lucide-react';
-import { analyzeRepository } from '../services/api';
+import { FolderTree, Blocks, Route, Download, Loader2 } from 'lucide-react';
+import { analyzeRepository, downloadSavedReportPdf, downloadRawReportPdf } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
 
@@ -25,6 +25,7 @@ export default function LandingPage() {
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -68,12 +69,57 @@ export default function LandingPage() {
     }
   };
 
-  const features = [
-    { icon: FolderTree, title: "Repository Analysis", desc: "Analyze repository structure and architecture." },
-    { icon: Blocks, title: "Feature Detection", desc: "Detect technologies and implemented features." },
-    { icon: BarChart, title: "Project Evaluation", desc: "Evaluate engineering practices and project maturity." },
-    { icon: Route, title: "Improvement Roadmap", desc: "Receive actionable recommendations and next steps." }
-  ];
+  const [downloadStatus, setDownloadStatus] = useState("Download PDF");
+
+  const handleDownloadPdf = async () => {
+    if (!result || !result.data) return;
+    setIsDownloading(true);
+    setDownloadStatus("Generating PDF...");
+    console.log("Downloading PDF for analysis:", result.data.id || "raw");
+    
+    try {
+      let response;
+      if (result.data.id) {
+        response = await downloadSavedReportPdf(result.data.id);
+      } else {
+        response = await downloadRawReportPdf(result.data);
+      }
+      
+      setDownloadStatus("Downloading...");
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const repoName = result.data.name || result.data.repo_name || 'project';
+      const safeName = repoName.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      link.setAttribute('download', `${safeName}-analysis-report.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF Download failed", err);
+      let errorMsg = "Failed to download PDF. Please try again.";
+      if (err.response && err.response.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          if (json.detail) errorMsg = json.detail;
+        } catch (e) {
+          // ignore parsing error
+        }
+      } else if (err.response?.data?.detail) {
+        errorMsg = err.response.data.detail;
+      }
+      alert(errorMsg);
+    } finally {
+      setIsDownloading(false);
+      setDownloadStatus("Download PDF");
+    }
+  };
+
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-32 overflow-x-hidden relative">
@@ -123,24 +169,7 @@ export default function LandingPage() {
 
         {/* Conditional Layout Rendering */}
         <AnimatePresence mode="wait">
-          {!showPlaceholder && !isAnalyzing && !isAuthenticated ? (
-            <motion.div
-              key="features"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto border-t border-zinc-800/50 pt-16"
-            >
-              {features.map((feat, i) => (
-                <div key={i} className="text-left p-6 premium-border rounded-2xl bg-zinc-900/20 hover:bg-zinc-900/50 transition-colors group">
-                  <feat.icon className="w-6 h-6 text-zinc-400 mb-4 group-hover:text-zinc-100 transition-colors" />
-                  <h3 className="text-zinc-100 font-medium mb-2">{feat.title}</h3>
-                  <p className="text-zinc-500 text-sm leading-relaxed">{feat.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          ) : showPlaceholder ? (
+          {showPlaceholder ? (
             <motion.div
               key="results"
               initial={{ opacity: 0 }}
@@ -169,6 +198,14 @@ export default function LandingPage() {
                         {result.data.description}
                       </p>
                     </div>
+                    <button 
+                      onClick={handleDownloadPdf}
+                      disabled={isDownloading}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50 shrink-0 mt-2"
+                    >
+                      {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                      {downloadStatus}
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import AnalysisReportDashboard from '../components/AnalysisReportDashboard';
 import FeatureDetectionCard from '../components/FeatureDetectionCard';
-import { FolderTree, Blocks, ArrowLeft, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api';
+import { FolderTree, Blocks, ArrowLeft, RefreshCw, Loader2, AlertCircle, Download } from 'lucide-react';
+import api, { downloadSavedReportPdf } from '../services/api';
 import { motion } from 'framer-motion';
 
 export default function ReportPage() {
@@ -16,6 +16,7 @@ export default function ReportPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -48,6 +49,53 @@ export default function ReportPage() {
     }
   };
 
+  const [downloadStatus, setDownloadStatus] = useState("Download PDF");
+
+  const handleDownloadPdf = async () => {
+    if (!result || !result.data) return;
+    setIsDownloading(true);
+    setDownloadStatus("Generating PDF...");
+    console.log("Downloading PDF for analysis:", id);
+    
+    try {
+      const response = await downloadSavedReportPdf(id);
+      setDownloadStatus("Downloading...");
+      
+      // Create a blob URL and trigger download
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const repoName = result.data.name || result.data.repo_name || 'project';
+      const safeName = repoName.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      link.setAttribute('download', `${safeName}-analysis-report.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF Download failed", err);
+      let errorMsg = "Failed to download PDF. Please try again.";
+      if (err.response && err.response.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          if (json.detail) errorMsg = json.detail;
+        } catch (e) {
+          // ignore parsing error
+        }
+      } else if (err.response?.data?.detail) {
+        errorMsg = err.response.data.detail;
+      }
+      alert(errorMsg);
+    } finally {
+      setIsDownloading(false);
+      setDownloadStatus("Download PDF");
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -65,13 +113,23 @@ export default function ReportPage() {
           </button>
 
           {result && !error && (
-            <button 
-              onClick={handleReanalyze}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[13px] font-medium transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Re-analyze Repository
-            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50"
+              >
+                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {downloadStatus}
+              </button>
+              <button 
+                onClick={handleReanalyze}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Re-analyze Repository
+              </button>
+            </div>
           )}
         </div>
 
