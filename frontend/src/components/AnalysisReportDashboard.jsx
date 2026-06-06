@@ -127,6 +127,42 @@ export default function AnalysisReportDashboard({ evaluation, recommendations = 
           </div>
         </div>
 
+        {/* Recruiter Verdict */}
+        {evaluation.recruiter_verdict && (
+          <div className="pt-2">
+            <div className="p-5 rounded-2xl bg-zinc-900/40 border border-zinc-800/80 flex flex-col md:flex-row md:items-center gap-4">
+              <div className={`shrink-0 flex items-center justify-center w-12 h-12 rounded-full ${
+                evaluation.recruiter_verdict.status === 'Portfolio Ready' 
+                  ? 'bg-emerald-500/10 text-emerald-400' 
+                  : 'bg-amber-500/10 text-amber-400'
+              }`}>
+                {evaluation.recruiter_verdict.status === 'Portfolio Ready' ? (
+                  <CheckCircle2 className="w-6 h-6" />
+                ) : (
+                  <AlertCircle className="w-6 h-6" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-[16px] font-semibold text-white">
+                    {evaluation.recruiter_verdict.title}
+                  </h3>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide ${
+                    evaluation.recruiter_verdict.status === 'Portfolio Ready'
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  }`}>
+                    {evaluation.recruiter_verdict.status}
+                  </span>
+                </div>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {evaluation.recruiter_verdict.message}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Score Breakdown */}
         {evaluation.breakdown && evaluation.breakdown.length > 0 && (
           <div className="pt-2">

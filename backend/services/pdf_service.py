@@ -119,6 +119,23 @@ def generate_report_pdf(report_data: dict) -> io.BytesIO:
     Story.append(Paragraph(desc, styles['NormalText']))
     
     add_hr()
+
+    # ---------------------------------------------------------
+    # Recruiter Verdict
+    # ---------------------------------------------------------
+    verdict = _parse_field(evaluation.get("recruiter_verdict", {}), {})
+    if verdict and isinstance(verdict, dict):
+        Story.append(Paragraph("Recruiter Verdict", styles['SectionHeader']))
+        
+        status = verdict.get("status", "Unknown")
+        title = verdict.get("title", "Assessment")
+        message = verdict.get("message", "")
+        
+        Story.append(Paragraph(f"<b>Status:</b> {status} ({title})", styles['NormalText']))
+        Story.append(Paragraph(f"<b>Assessment:</b>", styles['NormalText']))
+        Story.append(Paragraph(message, styles['NormalText']))
+        
+        add_hr()
     
     # ---------------------------------------------------------
     # Technology Stack
@@ -266,35 +283,7 @@ def generate_report_pdf(report_data: dict) -> io.BytesIO:
             
         add_hr()
 
-    # ---------------------------------------------------------
-    # Project Evaluation
-    # ---------------------------------------------------------
-    Story.append(Paragraph("Project Evaluation", styles['SectionHeader']))
-    metrics = evaluation.get("metrics", {})
-    if not isinstance(metrics, dict):
-        metrics = {}
-        
-    arch_score = metrics.get("architecture_score", "N/A")
-    sec_score = metrics.get("security_score", "N/A")
-    doc_score = metrics.get("documentation_score", "N/A")
-    dep_score = metrics.get("deployment_readiness", "N/A")
-    maint_score = metrics.get("maintainability_score", "N/A")
-    
-    eval_data = [
-        [Paragraph("Architecture Score:", styles['NormalText']), Paragraph(str(arch_score), styles['NormalText'])],
-        [Paragraph("Security Score:", styles['NormalText']), Paragraph(str(sec_score), styles['NormalText'])],
-        [Paragraph("Documentation Score:", styles['NormalText']), Paragraph(str(doc_score), styles['NormalText'])],
-        [Paragraph("Deployment Readiness:", styles['NormalText']), Paragraph(str(dep_score), styles['NormalText'])],
-        [Paragraph("Maintainability Score:", styles['NormalText']), Paragraph(str(maint_score), styles['NormalText'])]
-    ]
-    t3 = Table(eval_data, colWidths=[180, 280])
-    t3.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-    ]))
-    Story.append(t3)
-    
-    add_hr()
+
     
     # ---------------------------------------------------------
     # Resume Highlights

@@ -23,6 +23,33 @@ def _capability_detected(capabilities: dict, key: str) -> bool:
     return bool(value)
 
 
+def generate_recruiter_verdict(score: int, project_type: str) -> dict:
+    if score >= 85:
+        return {
+            "status": "Portfolio Ready",
+            "title": "Outstanding Portfolio Project ⭐",
+            "message": "This repository demonstrates advanced software engineering practices, strong architecture, and production-ready implementation."
+        }
+    elif score >= 70:
+        return {
+            "status": "Portfolio Ready",
+            "title": "Strong Portfolio Project",
+            "message": "This project demonstrates solid development skills and modern technologies. Suitable for showcasing to recruiters."
+        }
+    elif score >= 50:
+        return {
+            "status": "Needs Improvement",
+            "title": "Good Foundation Project",
+            "message": "The project demonstrates practical development skills but would benefit from additional features, testing, deployment, or documentation."
+        }
+    else:
+        return {
+            "status": "Needs Improvement",
+            "title": "Early Stage Project",
+            "message": "The repository demonstrates basic implementation but requires significant improvements before being used as a portfolio project."
+        }
+
+
 def calculate_score(capabilities: dict, project_type: str | None = None) -> dict:
     """
     Computes project quality score from capability detection results.
@@ -41,6 +68,7 @@ def calculate_score(capabilities: dict, project_type: str | None = None) -> dict
             "project_type": normalized_type,
             "strengths": [],
             "missing": [labels[k] for k in weights],
+            "recruiter_verdict": generate_recruiter_verdict(0, normalized_type),
         }
 
     score = 0
@@ -81,4 +109,5 @@ def calculate_score(capabilities: dict, project_type: str | None = None) -> dict
         "strengths": strengths,
         "missing": missing,
         "breakdown": breakdown,
+        "recruiter_verdict": generate_recruiter_verdict(score, normalized_type),
     }
