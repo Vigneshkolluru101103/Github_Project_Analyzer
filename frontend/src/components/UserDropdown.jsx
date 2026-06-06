@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 
 export default function UserDropdown() {
   const navigate = useNavigate();
-  const { user, logout, loginWithGoogle, authLoading } = useAuth();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
@@ -32,23 +31,6 @@ export default function UserDropdown() {
     }
   };
 
-  const handleSuccess = async (response) => {
-    try {
-      await loginWithGoogle(response.credential);
-    } catch {
-      // Error is handled in AuthContext
-    }
-  };
-
-  const handleError = () => {
-    console.error('Google Login Failed');
-    toast.error(
-      <div className="flex flex-col">
-        <span className="font-semibold text-white">Login Failed</span>
-        <span className="text-zinc-400 text-sm">Please try again.</span>
-      </div>
-    );
-  };
 
   const ref = useRef(null);
 
@@ -63,29 +45,7 @@ export default function UserDropdown() {
   }, []);
 
   if (!user) {
-    return (
-      <div className="flex items-center">
-        {authLoading ? (
-          <div className="flex items-center gap-2 text-zinc-400 px-3 py-1.5 h-[34px] rounded-lg border border-white/5 bg-white/5">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-[13px] font-medium">Signing in...</span>
-          </div>
-        ) : (
-          <div className="h-[36px] rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors bg-[#131314] flex items-center justify-center">
-            <div className="opacity-90 hover:opacity-100 transition-opacity">
-              <GoogleLogin
-                onSuccess={handleSuccess}
-                onError={handleError}
-                theme="filled_black"
-                size="medium"
-                text="continue_with"
-                shape="rectangular"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    return null;
   }
 
   return (

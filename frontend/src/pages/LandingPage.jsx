@@ -30,19 +30,12 @@ export default function LandingPage() {
 
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [hasChosenGuest, setHasChosenGuest] = useState(false);
-
   const handleAnalyzeClick = () => {
     if (!repoUrl || !projectType) return;
-    if (!isAuthenticated && !hasChosenGuest) {
-      setIsAuthModalOpen(true);
-      return;
-    }
     executeAnalysis();
   };
 
   const handleGuestContinue = () => {
-    setHasChosenGuest(true);
     executeAnalysis();
   };
 
@@ -204,14 +197,24 @@ export default function LandingPage() {
                         {result.data.description}
                       </p>
                     </div>
-                    <button 
-                      onClick={handleDownloadPdf}
-                      disabled={isDownloading}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50 shrink-0 mt-2"
-                    >
-                      {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                      {downloadStatus}
-                    </button>
+                    <div className="flex gap-2 mt-2">
+                      {!isAuthenticated && (
+                        <button
+                          onClick={() => setIsAuthModalOpen(true)}
+                          className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg text-[13px] font-medium transition-colors shrink-0"
+                        >
+                          Save Analysis
+                        </button>
+                      )}
+                      <button 
+                        onClick={handleDownloadPdf}
+                        disabled={isDownloading}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50 shrink-0"
+                      >
+                        {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        {downloadStatus}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -295,6 +298,7 @@ export default function LandingPage() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onGuestContinue={handleGuestContinue}
+        hideGuest={true}
       />
     </div>
   );

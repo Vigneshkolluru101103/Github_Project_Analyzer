@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
 
-export default function AuthModal({ isOpen, onClose, onGuestContinue }) {
+export default function AuthModal({ isOpen, onClose, onGuestContinue, hideGuest }) {
   const { loginWithGoogle, authLoading, error } = useAuth();
   const [isGuestLoading, setIsGuestLoading] = useState(false);
 
@@ -114,33 +114,37 @@ export default function AuthModal({ isOpen, onClose, onGuestContinue }) {
                 </div>
               )}
 
-              {/* Divider */}
-              <div className="flex items-center gap-4 my-2">
-                <div className="flex-1 h-[1px] bg-white/[0.06]" />
-                <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">OR</span>
-                <div className="flex-1 h-[1px] bg-white/[0.06]" />
-              </div>
+              {!hideGuest && (
+                <>
+                  {/* Divider */}
+                  <div className="flex items-center gap-4 my-2">
+                    <div className="flex-1 h-[1px] bg-white/[0.06]" />
+                    <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">OR</span>
+                    <div className="flex-1 h-[1px] bg-white/[0.06]" />
+                  </div>
 
-              {/* Secondary Action: Guest */}
-              <div>
-                <button
-                  onClick={handleGuest}
-                  disabled={isGuestLoading || authLoading}
-                  className="w-full h-[44px] flex items-center justify-center gap-2 bg-transparent hover:bg-white/5 text-zinc-300 hover:text-white text-[14px] font-medium rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all disabled:opacity-50"
-                >
-                  {isGuestLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                  ) : (
-                    <>
-                      <User className="w-4 h-4" />
-                      Continue as Guest
-                    </>
-                  )}
-                </button>
-                <p className="text-center text-[12px] text-zinc-500 mt-4">
-                  Guest mode allows analysis without saving history.
-                </p>
-              </div>
+                  {/* Secondary Action: Guest */}
+                  <div>
+                    <button
+                      onClick={handleGuest}
+                      disabled={isGuestLoading || authLoading}
+                      className="w-full h-[44px] flex items-center justify-center gap-2 bg-transparent hover:bg-white/5 text-zinc-300 hover:text-white text-[14px] font-medium rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all disabled:opacity-50"
+                    >
+                      {isGuestLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                      ) : (
+                        <>
+                          <User className="w-4 h-4" />
+                          Continue as Guest
+                        </>
+                      )}
+                    </button>
+                    <p className="text-center text-[12px] text-zinc-500 mt-4">
+                      Guest mode allows analysis without saving history.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
