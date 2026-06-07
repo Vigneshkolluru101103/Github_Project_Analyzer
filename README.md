@@ -2,7 +2,7 @@
 
 ProjectReviewer is a full-stack GitHub repository analysis platform that helps developers evaluate project quality, identify missing best practices, and generate recruiter-friendly insights.
 
-![ProjectReviewer Banner](https://via.placeholder.com/1200x400?text=ProjectReviewer)
+
 
 ## ✨ Features
 
@@ -45,13 +45,9 @@ ProjectReviewer is a full-stack GitHub repository analysis platform that helps d
 
 ## 🚀 Live Demo
 
-Frontend:
-Coming Soon
+https://github.com/Vigneshkolluru101103/Github_Project_Analyzer
 
-Backend API:
-Coming Soon
-
----
+--
 
 ## ⚙️ Installation
 
