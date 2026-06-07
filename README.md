@@ -45,7 +45,7 @@ ProjectReviewer is a full-stack GitHub repository analysis platform that helps d
 
 ## 🚀 Live Demo
 
-https://github.com/Vigneshkolluru101103/Github_Project_Analyzer
+https://github-project-analyzer-ecru.vercel.app/
 
 --
 
