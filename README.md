@@ -148,7 +148,7 @@ GitHub:
 https://github.com/Vigneshkolluru101103
 
 LinkedIn:
-(Add LinkedIn URL)
+www.linkedin.com/in/vignesh-kolluru-334983316
 
 ---
 
