@@ -100,6 +100,10 @@ def analyze_repo(
                 repo_data["id"] = record.id
             except Exception as save_exc:
                 logger.error("Analysis completed but database save failed: %s", save_exc)
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Analysis completed but failed to save history: {save_exc}"
+                )
 
         return {
             "message": "Repository analyzed successfully",
