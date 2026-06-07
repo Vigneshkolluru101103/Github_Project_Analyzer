@@ -17,6 +17,7 @@ from analyzers.scoring_engine import calculate_score
 from analyzers.tech_analyzer import detect_technologies
 from database.database import get_db
 from models.analysis_history import AnalysisHistory
+from models.user import User
 from services.analysis_history_service import save_analysis_history
 from services.jwt_service import decode_access_token
 from services.github_service import fetch_repository_data, fetch_repo_tree
@@ -27,12 +28,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 security = HTTPBearer(auto_error=False)
 
-def get_current_user_id_optional(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> int | None:
+def get_current_user_id_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    db: Session = Depends(get_db)
+) -> int | None:
     if not credentials:
         return None
     try:
         payload = decode_access_token(credentials.credentials)
-        return int(payload["sub"])
+        user_id = int(payload["sub"])
+        
+        # Verify the user actually exists in the database
+        # This prevents stale JWTs from causing ForeignKey violations
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+            
+        return user_id
     except (jwt.PyJWTError, KeyError, ValueError):
         return None
 
