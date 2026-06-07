@@ -33,14 +33,10 @@ def save_analysis_history(db: Session, repo_data: dict, user_id: int | None = No
 
     project_type = repo_data.get("project_type", "Web Application")
 
-    print("Saving:")
-    print(f"  repo_name:     {fields['repo_name']}")
-    print(f"  project_type:  {project_type}")
-    print(f"  stars:         {fields['stars']}")
-    print(f"  forks:         {fields['forks']}")
-    print(f"  language:      {fields['language']}")
-    print(f"  user_id:       {user_id}")
-
+    print("--- Entered save_analysis_history ---")
+    print(f"user_id: {user_id}")
+    print(f"repo_url: {fields['repo_url']}")
+    
     logger.info(
         "Saving analysis — repo_name=%s project_type=%s stars=%s forks=%s language=%s user_id=%s",
         fields["repo_name"],
@@ -81,10 +77,10 @@ def save_analysis_history(db: Session, repo_data: dict, user_id: int | None = No
             record.stars,
             record.forks,
         )
-        print("Analysis saved successfully")
+        print(f"Commit success for repo: {fields['repo_url']}")
         return record
     except Exception as exc:
         db.rollback()
         logger.error("Failed to save analysis history: %s", exc, exc_info=True)
-        print(f"Failed to save analysis history: {exc}")
+        print(f"Exception details during insert: {exc}")
         raise

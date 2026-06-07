@@ -3,7 +3,7 @@ from typing import Literal
 
 import os
 import tempfile
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
@@ -62,9 +62,17 @@ class RepoRequest(BaseModel):
 @router.post("/analyze")
 def analyze_repo(
     request: RepoRequest, 
+    request_obj: Request,
     db: Session = Depends(get_db),
     user_id: int | None = Depends(get_current_user_id_optional)
 ):
+    print("--- /analyze endpoint hit ---")
+    auth_header = request_obj.headers.get("Authorization")
+    print(f"Authorization header received: {'Yes' if auth_header else 'No'}")
+    if auth_header:
+        print(f"Header preview: {auth_header[:15]}...")
+    print(f"Resolved user_id from dependency: {user_id}")
+    
     try:
         project_type = request.project_type
 
@@ -95,15 +103,22 @@ def analyze_repo(
         )["recommendations"]
 
         if user_id:
+            print("--- ENTERING if user_id block ---")
+            print(f"Attempting to save analysis for user_id={user_id}")
             try:
+                print("Calling save_analysis_history()...")
                 record = save_analysis_history(db, repo_data, user_id=user_id)
+                print("Returned from save_analysis_history() successfully")
                 repo_data["id"] = record.id
             except Exception as save_exc:
+                print(f"Exception caught while saving analysis: {save_exc}")
                 logger.error("Analysis completed but database save failed: %s", save_exc)
                 raise HTTPException(
                     status_code=500,
                     detail=f"Analysis completed but failed to save history: {save_exc}"
                 )
+        else:
+            print("--- SKIPPING database save because user_id is None ---")
 
         return {
             "message": "Repository analyzed successfully",
