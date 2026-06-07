@@ -119,21 +119,21 @@ export default function ReportPage() {
           </button>
 
           {result && !error && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={handleDownloadPdf}
                 disabled={isDownloading}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[12px] font-medium transition-colors disabled:opacity-50"
               >
-                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                {downloadStatus}
+                {isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                {downloadStatus === "Download PDF" ? "Download" : downloadStatus}
               </button>
               <button 
                 onClick={handleReanalyze}
-                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[13px] font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[12px] font-medium transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
-                Re-analyze Repository
+                <RefreshCw className="w-3.5 h-3.5" />
+                Re-analyze
               </button>
             </div>
           )}

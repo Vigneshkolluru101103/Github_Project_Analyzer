@@ -197,11 +197,11 @@ export default function LandingPage() {
                         {result.data.description}
                       </p>
                     </div>
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex items-center gap-2 mt-2">
                       {!isAuthenticated && (
                         <button
                           onClick={() => setIsAuthModalOpen(true)}
-                          className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg text-[13px] font-medium transition-colors shrink-0"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg text-[12px] font-medium transition-colors shrink-0"
                         >
                           Save Analysis
                         </button>
@@ -209,10 +209,10 @@ export default function LandingPage() {
                       <button 
                         onClick={handleDownloadPdf}
                         disabled={isDownloading}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50 shrink-0"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-[12px] font-medium transition-colors disabled:opacity-50 shrink-0"
                       >
-                        {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                        {downloadStatus}
+                        {isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                        {downloadStatus === "Download PDF" ? "Download" : downloadStatus}
                       </button>
                     </div>
                   </div>
