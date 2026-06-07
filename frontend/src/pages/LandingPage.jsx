@@ -32,7 +32,11 @@ export default function LandingPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const handleAnalyzeClick = () => {
     if (!repoUrl || !projectType) return;
-    executeAnalysis();
+    if (!isAuthenticated) {
+      setIsAuthModalOpen(true);
+    } else {
+      executeAnalysis();
+    }
   };
 
   const handleGuestContinue = () => {
@@ -298,7 +302,7 @@ export default function LandingPage() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onGuestContinue={handleGuestContinue}
-        hideGuest={true}
+        hideGuest={false}
       />
     </div>
   );
